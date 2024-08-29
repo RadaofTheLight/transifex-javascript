@@ -1,4 +1,6 @@
-import { useEffect, useState, useContext } from 'react';
+import {
+  useEffect, useState, useContext, useCallback,
+} from 'react';
 import {
   tx,
   onEvent,
@@ -24,12 +26,12 @@ import { TXNativeContext } from '../context/TXNativeContext';
  *   return <span>{translation.toUpperCase()}</span>;
  * } */
 
-export default function useT() {
+export default function useT(txInstance) {
   // Check for a different tx initialization
   const context = useContext(TXNativeContext);
-  const instance = context.instance || tx;
+  const instance = txInstance || context.instance || tx;
 
-  const [, setCounter] = useState(0);
+  const [counter, setCounter] = useState(0);
   useEffect(() => {
     // Using `setCounter` will trigger a rerender
     function rerender(_, caller) {
@@ -44,5 +46,9 @@ export default function useT() {
       offEvent(TRANSLATIONS_FETCHED, rerender);
     };
   }, [setCounter, instance]);
-  return (_str, props) => translateWithElements(_str, props, context);
+
+  return useCallback(
+    (_str, props) => translateWithElements(_str, props, instance),
+    [instance, counter],
+  );
 }

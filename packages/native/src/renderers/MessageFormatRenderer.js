@@ -1,9 +1,5 @@
 /* eslint-disable class-methods-use-this */
-import MessageFormat from '@messageformat/core';
-
-// object to cache MessageFormat classes related to
-// specific locales
-const MF = {};
+import IntlMessageFormat from 'intl-messageformat';
 
 /**
  * MessageFormat renderer
@@ -16,14 +12,12 @@ export default class MessageFormatRenderer {
     // construct a MessageFormat class based on locale
     // to make dates and other content localizable
     const locale = ((localeCode || '').split('_'))[0];
-    if (!MF[locale]) {
-      try {
-        MF[locale] = new MessageFormat(locale);
-      } catch (err) {
-        MF[locale] = new MessageFormat();
-      }
+    let msg;
+    try {
+      msg = new IntlMessageFormat(sourceString, locale, undefined, { ignoreTag: true });
+    } catch (err) {
+      msg = new IntlMessageFormat(sourceString, undefined, undefined, { ignoreTag: true });
     }
-    const msg = MF[locale].compile(sourceString);
-    return msg(params);
+    return msg.format(params);
   }
 }

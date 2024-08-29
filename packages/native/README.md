@@ -142,6 +142,9 @@ tx.init({
   // Fetch only strings that contain specific tags from CDS, e.g. "master,react"
   filterTags: String,
 
+  // Fetch only strings matching translation status: reviewed,proofread,finalized
+  filterStatus: String,
+
   // Missing translation policy, defaults to "new SourceStringPolicy()"
   missingPolicy: Function,
 
@@ -313,6 +316,9 @@ params: Object({
 
   // Replace the existing string tags with the tags of this request
   overrideTags: Boolean,
+
+  // Replace the existing string occurrences with the occurrences of this request
+  overrideOccurrences: Boolean,
 
   // If true, when wait for processing to be complete before
   // resolving this promise

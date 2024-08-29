@@ -1,37 +1,21 @@
-import { Component, OnDestroy } from '@angular/core';
-import { ComponentFixture, inject, TestBed } from '@angular/core/testing';
+import { Component, DebugElement } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ReplaySubject } from 'rxjs';
 
-import { LoadTranslationsDirective, TranslationService } from '../src/public-api';
-
+import { LoadTranslationsDirective, TranslationService } from '../public-api';
 
 describe('LoadTranslationsDirective', () => {
   @Component({
-    template: `
-      <div [txLoadTranslations]="'tag1'"></div>
-    `,
+    template: ` <div [txLoadTranslations]="'tag1'"></div> `,
   })
-  class TestComponent implements OnDestroy {
-    ngOnDestroy() {}
-  }
+  class TestComponent {}
 
   let localeChangedSubject: ReplaySubject<string>;
 
-  let directives: any;
+  let directives: DebugElement[];
   let fixture: ComponentFixture<TestComponent>;
   let service: TranslationService;
-
-  const translationParams = {
-    _key: '',
-    _context: '',
-    _comment: '',
-    _charlimit: 0,
-    _tags: '',
-    _escapeVars: false,
-    _inline: false,
-    sanitize: false,
-  };
 
   beforeEach(() => {
     fixture = TestBed.configureTestingModule({
@@ -44,14 +28,15 @@ describe('LoadTranslationsDirective', () => {
     service = TestBed.inject(TranslationService);
 
     spyOn(service, 'getCurrentLocale').and.returnValue('en');
-    spyOnProperty(service, 'localeChanged', 'get').and.
-      returnValue(localeChangedSubject);
+    spyOnProperty(service, 'localeChanged', 'get').and.returnValue(
+      localeChangedSubject
+    );
     spyOn(service, 'setCurrentLocale').and.callFake(async (locale) => {
       localeChangedSubject.next(locale);
     });
 
     directives = fixture.debugElement.queryAll(
-      By.directive(LoadTranslationsDirective),
+      By.directive(LoadTranslationsDirective)
     );
     fixture.detectChanges();
   });

@@ -317,8 +317,8 @@ describe('extractPhrases with hashed keys', () => {
           meta: { context: [], tags: [], occurrences: ['angular-template.html'] },
         },
         'text.main_title': {
+          meta: { context: [], occurrences: ['angular-template.html'], tags: [] },
           string: 'This is a test',
-          meta: { context: [], tags: [], occurrences: ['angular-template.html'] },
         },
         'text.pipe_text': {
           string: 'This is a pipe text',
@@ -328,8 +328,20 @@ describe('extractPhrases with hashed keys', () => {
           string: 'This is a second pipe text',
           meta: { context: [], tags: [], occurrences: ['angular-template.html'] },
         },
-        '9eae72bb80f1d30adc39a97c56eb2f6b': {
-          string: '\n      This is a\n      third pipe text\n      ',
+        'my-str-key': {
+          meta: {
+            context: [],
+            occurrences: [
+              'angular-template.html',
+            ],
+            tags: [
+              'my-str-tag',
+            ],
+          },
+          string: 'My str',
+        },
+        '867b7cc4643da9b4c97ababa43c50c23': {
+          string: 'Used in a {binding}',
           meta: { context: [], tags: [], occurrences: ['angular-template.html'] },
         },
         'text.pipe_text_fourth': {
@@ -344,8 +356,22 @@ describe('extractPhrases with hashed keys', () => {
           string: 'This is a sixth pipe text, no one should do this',
           meta: { context: [], tags: [], occurrences: ['angular-template.html'] },
         },
-        '867b7cc4643da9b4c97ababa43c50c23': {
-          string: 'Used in a {binding}',
+        'text.pipe_text_third': {
+          meta: {
+            context: [],
+            occurrences: [
+              'angular-template.html',
+            ],
+            tags: [],
+          },
+          string: 'This is a third pipe text',
+        },
+        'text.pipe_text_seventh': {
+          string: 'This is a seventh pipe test for additional white spaces',
+          meta: { context: [], tags: ['tagA', 'tagB'], occurrences: ['angular-template.html'] },
+        },
+        '30846bf58089a2c546dd18b0aa3005c1': {
+          string: '\n      This is a\n      second pipe text\n      ',
           meta: { context: [], tags: [], occurrences: ['angular-template.html'] },
         },
         'text.pipe_binding': {
@@ -355,6 +381,77 @@ describe('extractPhrases with hashed keys', () => {
         'content.is-text': {
           string: 'This is a text with a context, and it should be recognized as one',
           meta: { context: ['is-text'], tags: [], occurrences: ['angular-template.html'] },
+        },
+        'password.key': {
+          meta: {
+            context: [],
+            occurrences: [
+              'angular-template.html',
+            ],
+            tags: [
+              'tagAa',
+              'tagBa',
+            ],
+          },
+          string: 'Password',
+        },
+        'some-key': {
+          meta: {
+            context: [],
+            occurrences: [
+              'angular-template.html',
+            ],
+            tags: [
+              't1',
+              't2',
+            ],
+          },
+          string: '{var1}',
+        },
+        'some-key-two': {
+          meta: {
+            context: [],
+            occurrences: [
+              'angular-template.html',
+            ],
+            tags: [
+              't3',
+              't4',
+            ],
+          },
+          string: '{var2}',
+        },
+        'some-key-three': {
+          meta: {
+            context: [],
+            occurrences: [
+              'angular-template.html',
+            ],
+            tags: [],
+          },
+          string: '{var3}',
+        },
+        'some-key-four': {
+          meta: {
+            context: [],
+            occurrences: [
+              'angular-template.html',
+            ],
+            tags: [
+              'some tags',
+            ],
+          },
+          string: '{var4}',
+        },
+        'text.inside-self-closing-tag': {
+          meta: {
+            context: [],
+            occurrences: [
+              'angular-template.html',
+            ],
+            tags: [],
+          },
+          string: 'This is some text inside a self-closing tag',
         },
       });
   });
@@ -402,12 +499,56 @@ describe('extractPhrases with hashed keys', () => {
           string: 'Text {someothervalue}',
           meta: { context: [], tags: [], occurrences: ['vuejs.vue'] },
         },
+        b1cb1acd2052787f97693d8eb660e366: {
+          meta: {
+            context: [],
+            occurrences: [
+              'vuejs.vue',
+            ],
+            tags: [],
+          },
+          string: 'Text 7',
+        },
+        bc34d6c4a81fe6764e851ef5c4597f9b: {
+          meta: {
+            context: [],
+            occurrences: [
+              'vuejs.vue',
+            ],
+            tags: [],
+          },
+          string: 'Text 8',
+        },
+        c2f94cf9d2c1065bc2ef5e766fa0f4ca: {
+          meta: {
+            context: [],
+            occurrences: [
+              'vuejs.vue',
+            ],
+            tags: [],
+          },
+          string: 'A prop string',
+        },
+        f6d3188db065ecf6b7b4165b030f3bc6: {
+          meta: {
+            context: [],
+            occurrences: [
+              'vuejs.vue',
+            ],
+            tags: [],
+          },
+          string: 'Text 9 with siblings',
+        },
         '57b0d93fc0e1c3af68a41214147efd97': {
           string: 'Text 5',
           meta: { context: [], tags: [], occurrences: ['vuejs.vue'] },
         },
-        '39bcf931264f8a4de0d4c993ba8e7094': {
-          string: 'Text 6',
+        d42dd30c271a7dc6ecfaddd2cee7e457: {
+          string: 'Text in script',
+          meta: { context: [], tags: [], occurrences: ['vuejs.vue'] },
+        },
+        '2d97d5484416727f585501ee9f842ab1': {
+          string: 'Text in script setup',
           meta: { context: [], tags: [], occurrences: ['vuejs.vue'] },
         },
       });

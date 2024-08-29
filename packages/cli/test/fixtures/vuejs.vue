@@ -15,14 +15,43 @@
       <UT _str="<b>HTML text</b>" _tags="tag1" />
       <UT _str="<b>HTML inline text</b>" _inline="true" />
       {{$t('Text 5')}}
+      <div>{{$t('Text 7')}}</div>
+      <div v-if="condition == 'something'">
+        <div>
+          <div><p>{{$t('Text 8')}}</p></div>
+        </div>
+      </div>
+      <span>{{ t(`Text 9 with siblings`) }}<sup>*</sup></span>
+      <SomeComponent :aprop="t('A prop string')"/>
+      <p>
+        Try out <a href="some" target="string">simple dom</a> doesn't break
+          things
+      </p>
+      <Comp :to="{
+        aprop: `${avariable}`,
+        anotherprop: {
+          something: 'something',
+        }}"
+      />
   </div>
 </template>
+
 <script>
 import { defineComponent } from '@vue/composition-api'
 
 export default defineComponent({
     setup() {
-        t('Text 6')
+        t('Text in script')
+    },
+})
+</script>
+
+<script setup>
+import { defineComponent } from '@vue/composition-api'
+
+export default defineComponent({
+    setup() {
+        t('Text in script setup')
     },
 })
 </script>

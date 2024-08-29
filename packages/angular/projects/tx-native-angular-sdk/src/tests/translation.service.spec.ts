@@ -1,20 +1,22 @@
-import { not } from '@angular/compiler/src/output/output_ast';
 import { TestBed } from '@angular/core/testing';
-import { tx } from '@transifex/native';
+import { ILanguage, ITranslationConfig, TxNative, tx } from '@transifex/native';
 
-import { TranslationService } from '../src/lib/translation.service';
-import { ILanguage, ITranslationServiceConfig } from '../src/public-api';
+import { TranslationService } from '../lib/translation.service';
+import { ITranslationServiceConfig } from '../public-api';
 
 describe('TranslationService', () => {
   let service: TranslationService;
   const txConfig: ITranslationServiceConfig = {
     token: '',
-    cache: () => { },
     cdsHost: '',
-    errorPolicy: undefined,
     filterTags: '',
-    missingPolicy: undefined,
-    stringRenderer: undefined,
+    filterStatus: '',
+  };
+  const txTranslationConfig: ITranslationConfig = {
+    token: '',
+    cdsHost: '',
+    filterTags: '',
+    filterStatus: '',
   };
   const translationParams = {
     _key: '',
@@ -27,8 +29,8 @@ describe('TranslationService', () => {
     sanitize: false,
   };
   const languages: ILanguage[] = [
-    { code: 'en', name: 'English', localized_name: 'English' },
-    { code: 'el', name: 'Greek', localized_name: 'Ελληνικά' },
+    { code: 'en', name: 'English', localized_name: 'English', rtl: false },
+    { code: 'el', name: 'Greek', localized_name: 'Ελληνικά', rtl: false },
   ];
 
   beforeEach(() => {
@@ -43,14 +45,12 @@ describe('TranslationService', () => {
   });
 
   it('should init the TX Native object', async () => {
-    spyOn(service, 'getInstance').and.returnValue(
-      {
-        currentLocale: 'en',
-        fetchTranslations: tx.fetchTranslations,
-        init: tx.init,
-        fetchedTags: { en: [] },
-      },
-    );
+    spyOn(service, 'getInstance').and.returnValue({
+      currentLocale: 'en',
+      fetchTranslations: tx.fetchTranslations,
+      init: tx.init,
+      fetchedTags: { en: [] },
+    } as unknown as TxNative);
     spyOn(service, 'getLanguages');
 
     // act
@@ -58,9 +58,7 @@ describe('TranslationService', () => {
 
     // assert
     expect(service).toBeTruthy();
-    expect(tx.init).toHaveBeenCalledWith(
-      { ...txConfig },
-    );
+    expect(tx.init).toHaveBeenCalledWith({ ...txTranslationConfig });
   });
 
   it('should translate', () => {
@@ -68,14 +66,15 @@ describe('TranslationService', () => {
     spyOn(tx, 'translate').and.returnValue('translated');
 
     // act
-    const result = service
-      .translate('not-translated', { ...translationParams });
+    const result = service.translate('not-translated', {
+      ...translationParams,
+    });
 
     // assert
     expect(result).toBe('translated');
-    expect(tx.translate).toHaveBeenCalledWith(
-      'not-translated', { ...translationParams },
-    );
+    expect(tx.translate).toHaveBeenCalledWith('not-translated', {
+      ...translationParams,
+    });
   });
 
   it('should translate with key', () => {
@@ -83,15 +82,17 @@ describe('TranslationService', () => {
     spyOn(tx, 'translate').and.returnValue('translated');
 
     // act
-    const result = service
-      .translate('not-translated',
-        { ...translationParams, _key: 'key-string' });
+    const result = service.translate('not-translated', {
+      ...translationParams,
+      _key: 'key-string',
+    });
 
     // assert
     expect(result).toBe('translated');
-    expect(tx.translate).toHaveBeenCalledWith(
-      'not-translated', { ...translationParams, _key: 'key-string' },
-    );
+    expect(tx.translate).toHaveBeenCalledWith('not-translated', {
+      ...translationParams,
+      _key: 'key-string',
+    });
   });
 
   it('should translate and escape', () => {
@@ -99,20 +100,22 @@ describe('TranslationService', () => {
     spyOn(tx, 'translate').and.returnValue('<b>Hola {username}</b>');
 
     // act
-    const result = service
-      .translate('<b>Hello {username}</b>',
-        { ...translationParams, _escapeVars: true });
+    const result = service.translate('<b>Hello {username}</b>', {
+      ...translationParams,
+      _escapeVars: true,
+    });
 
     // assert
     expect(result).toBe('<b>Hola {username}</b>');
-    expect(tx.translate).toHaveBeenCalledWith(
-      '<b>Hello {username}</b>', { ...translationParams, _escapeVars: true },
-    );
+    expect(tx.translate).toHaveBeenCalledWith('<b>Hello {username}</b>', {
+      ...translationParams,
+      _escapeVars: true,
+    });
   });
 
   it('should set current locale', async () => {
     // setup
-    spyOn(tx, 'setCurrentLocale').and.returnValue(Promise.resolve());
+    spyOn(tx, 'setCurrentLocale').and.resolveTo();
 
     // act
     await service.setCurrentLocale('el');
@@ -135,7 +138,7 @@ describe('TranslationService', () => {
 
   it('should get languages', async () => {
     // setup
-    spyOn(tx, 'getLanguages').and.returnValue(Promise.resolve(languages));
+    spyOn(tx, 'getLanguages').and.resolveTo(languages);
 
     // act
     const result = await service.getLanguages();
@@ -147,7 +150,7 @@ describe('TranslationService', () => {
 
   it('should add a controlled instance successfully', async () => {
     // setup
-    spyOn(tx, 'controllerOf').and.returnValue({});
+    spyOn(tx, 'controllerOf').and.resolveTo();
 
     const instanceConfig = {
       token: 'token',
@@ -165,7 +168,7 @@ describe('TranslationService', () => {
 
   it('should add a not controlled instance successfully', async () => {
     // setup
-    spyOn(tx, 'controllerOf').and.returnValue({});
+    spyOn(tx, 'controllerOf').and.resolveTo();
 
     const instanceConfig = {
       token: 'token',
@@ -183,7 +186,7 @@ describe('TranslationService', () => {
 
   it('should not add a malformed instance (alias)', async () => {
     // setup
-    spyOn(tx, 'controllerOf').and.returnValue({});
+    spyOn(tx, 'controllerOf').and.resolveTo();
 
     const instanceConfig = {
       token: 'token',
@@ -192,14 +195,15 @@ describe('TranslationService', () => {
     };
 
     // act/assert
-    await expectAsync(service.addInstance(instanceConfig))
-      .toBeResolvedTo(false);
+    await expectAsync(service.addInstance(instanceConfig)).toBeResolvedTo(
+      false
+    );
     expect(tx.controllerOf).not.toHaveBeenCalled();
   });
 
   it('should not add a malformed instance (token)', async () => {
     // setup
-    spyOn(tx, 'controllerOf').and.returnValue({});
+    spyOn(tx, 'controllerOf').and.resolveTo();
 
     const instanceConfig = {
       token: '',
@@ -208,8 +212,9 @@ describe('TranslationService', () => {
     };
 
     // act/assert
-    await expectAsync(service.addInstance(instanceConfig))
-      .toBeResolvedTo(false);
+    await expectAsync(service.addInstance(instanceConfig)).toBeResolvedTo(
+      false
+    );
     expect(tx.controllerOf).not.toHaveBeenCalled();
   });
 
@@ -221,7 +226,7 @@ describe('TranslationService', () => {
       controlled: false,
     };
     await service.addInstance(instanceConfig);
-    spyOn(tx, 'controllerOf').and.returnValue({});
+    spyOn(tx, 'controllerOf').and.resolveTo();
 
     // act
     const result = await service.addInstance(instanceConfig);
@@ -251,80 +256,62 @@ describe('TranslationService', () => {
 
   it('should fetch translations on demand without custom instance', async () => {
     // setup
-    spyOn(tx, 'fetchTranslations').and.returnValue(
-      Promise.resolve({}),
-    );
-    spyOn(service, 'getInstance').and.returnValue(
-      {
-        currentLocale: 'en',
-        fetchTranslations: tx.fetchTranslations,
-        fetchedTags: { en: [] },
-      },
-    );
+    spyOn(tx, 'fetchTranslations').and.resolveTo();
+    spyOn(service, 'getInstance').and.returnValue({
+      currentLocale: 'en',
+      fetchTranslations: tx.fetchTranslations,
+      fetchedTags: { en: [] },
+    } as unknown as TxNative);
 
     // act
     await service.fetchTranslations('tag1');
 
     // assert
-    expect(tx.fetchTranslations).toHaveBeenCalledWith(
-      'en',
-      { filterTags: 'tag1' },
-    );
+    expect(tx.fetchTranslations).toHaveBeenCalledWith('en', {
+      filterTags: 'tag1',
+    });
   });
 
-  it('should fetch translations on demand without custom instance no fetched tags',
-    async () => {
-      // setup
-      spyOn(tx, 'fetchTranslations').and.returnValue(
-        Promise.resolve({}),
-      );
-      spyOn(service, 'getInstance').and.returnValue(
-        {
-          currentLocale: 'en',
-          fetchTranslations: tx.fetchTranslations,
-          fetchedTags: undefined,
-        },
-      );
+  it('should fetch translations on demand without custom instance no fetched tags', async () => {
+    // setup
+    spyOn(tx, 'fetchTranslations').and.resolveTo();
+    spyOn(service, 'getInstance').and.returnValue({
+      currentLocale: 'en',
+      fetchTranslations: tx.fetchTranslations,
+      fetchedTags: undefined,
+    } as unknown as TxNative);
 
-      // act
-      await service.fetchTranslations('tag1');
+    // act
+    await service.fetchTranslations('tag1');
 
-      // assert
-      expect(tx.fetchTranslations).toHaveBeenCalledWith(
-        'en',
-        { filterTags: 'tag1' },
-      );
+    // assert
+    expect(tx.fetchTranslations).toHaveBeenCalledWith('en', {
+      filterTags: 'tag1',
     });
+  });
 
   it('should fetch translations on demand with custom instance', async () => {
     // setup
-    spyOn(tx, 'fetchTranslations').and.returnValue(
-      Promise.resolve({}),
-    );
-    spyOn(service, 'getInstance').and.returnValue(
-      {
-        currentLocale: 'en',
-        fetchTranslations: tx.fetchTranslations,
-        fetchedTags: [],
-      },
-    );
+    spyOn(tx, 'fetchTranslations').and.resolveTo();
+    spyOn(service, 'getInstance').and.returnValue({
+      currentLocale: 'en',
+      fetchTranslations: tx.fetchTranslations,
+      fetchedTags: [],
+    } as unknown as TxNative);
 
     // act
     await service.fetchTranslations('tag1', 'my-instance');
 
     // assert
     expect(service.getInstance).toHaveBeenCalledWith('my-instance');
-    expect(tx.fetchTranslations).toHaveBeenCalledWith(
-      'en',
-      { filterTags: 'tag1' },
-    );
+    expect(tx.fetchTranslations).toHaveBeenCalledWith('en', {
+      filterTags: 'tag1',
+    });
   });
 
   it('should not fetch translations on demand if no instance', async () => {
     // setup
-    spyOn(tx, 'fetchTranslations').and.returnValue(
-      Promise.resolve({}),
-    );
+    spyOn(tx, 'fetchTranslations').and.resolveTo();
 
     // act
     await service.fetchTranslations('tag1');

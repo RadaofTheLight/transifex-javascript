@@ -18,6 +18,10 @@ async function uploadPhrases(payload, params) {
     data: payload,
     meta: {
       purge: !!params.purge,
+      dry_run: !!params.dry_run,
+      keep_translations: !params.do_not_keep_translations,
+      override_tags: !!params.override_tags,
+      override_occurrences: !!params.override_occurrences,
     },
   }, {
     headers: {

@@ -1,11 +1,36 @@
-/* globals describe, it */
+/* globals describe, it, beforeEach */
 
 import { expect } from 'chai';
-import { tx, t } from '../src/index';
+import { createNativeInstance } from '../src/index';
 
 const NODE_VER = parseInt((process.version.split('.')[0]).replace('v', ''), 10);
 
 describe('String renderer', () => {
+  let t;
+  let tx;
+
+  beforeEach(() => {
+    tx = createNativeInstance();
+    t = tx.translate.bind(tx);
+  });
+
+  it('renders plurals', () => {
+    expect(tx.stringRenderer.render('{cnt, plural, one {# hello} other {# hellos}}', '', { cnt: 1 }))
+      .to.equal('1 hello');
+    expect(tx.stringRenderer.render('{cnt, plural, one {# hello} other {# hellos}}', '', { cnt: 0 }))
+      .to.equal('0 hellos');
+    expect(tx.stringRenderer.render('{cnt, plural, one {# one hello} two {# two hellos} many {# many hellos} other {# other hellos}}', '', { cnt: 2 }))
+      .to.equal('2 other hellos');
+    expect(tx.stringRenderer.render('{cnt, plural, one {# one hello} two {# two hellos} many {# many hellos} other {# other hellos}}', 'he', { cnt: 2 }))
+      .to.equal('2 two hellos');
+    expect(tx.stringRenderer.render('{cnt, plural, one {תחנה אחת} two {# תחנות} many {# תחנות} other {# תחנות}}', 'he', { cnt: 0 }))
+      .to.equal('0 תחנות');
+    expect(tx.stringRenderer.render('{cnt, plural, one {תחנה אחת} two {# תחנות} many {# תחנות} other {# תחנות}}', 'he', { cnt: 1 }))
+      .to.equal('תחנה אחת');
+    expect(tx.stringRenderer.render('{cnt, plural, one {תחנה אחת} two {# תחנות} many {# תחנות} other {# תחנות}}', 'he', { cnt: 2 }))
+      .to.equal('2 תחנות');
+  });
+
   it('renders with localized dates', async () => {
     const d = Date.parse('2020-02-01');
 
@@ -32,8 +57,6 @@ describe('String renderer', () => {
   });
 
   it('renders with custom renderer', async () => {
-    const oldRenderer = tx.stringRenderer;
-
     class CustomRenderer {
       // eslint-disable-next-line class-methods-use-this
       render() {
@@ -46,10 +69,5 @@ describe('String renderer', () => {
     });
 
     expect(t('Hello')).to.deep.equal('foo');
-
-    // revert
-    tx.init({
-      stringRenderer: oldRenderer,
-    });
   });
 });

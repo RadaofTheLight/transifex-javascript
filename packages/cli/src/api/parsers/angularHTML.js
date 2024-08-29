@@ -7,34 +7,55 @@ const { createPayload, isPayloadValid } = require('./utils');
 /**
  * Global regexp to find use of TranslatePipe.
  */
-const pipeRegexpG = /{{\s*?['|"]([\s\S]+?)['|"]\s*?\|\s*?translate\s*?:?({[\s\S]*?})?\s*?}}/gi;
+const pipeRegexpG = /{{\s*?['|"]([\s\S]+?)['|"]\s*?\|\s*?translate\s*?:?\s*?({[\s\S]*?})?\s*?}}/gi;
 
 /**
   * Regexp to find use of TranslatePipe and match with capture groups.
   */
-const pipeRegexp = /{{\s*?['|"]([\s\S]+?)['|"]\s*?\|\s*?translate\s*?:?({[\s\S]*?})?\s*?}}/i;
+const pipeRegexp = /{{\s*?['|"]([\s\S]+?)['|"]\s*?\|\s*?translate\s*?:?\s*?({[\s\S]*?})?\s*?}}/i;
 
 /**
   * Regexp to find use of TranslatePipe in Attributes;
   */
-const pipeBindingRegexp = /'([\s\S]+?)'\s*?\|\s*?translate\s*?:?({[\s\S]*?})?/i;
+const pipeBindingRegexp = /'([\s\S]+?)'\s*?\|\s*?translate\s*:\s*({[\s\S]*?})?\s*?/i;
+
+/**
+  * Regexp to find use of TranslatePipe without parameters in Attributes;
+  */
+const pipeSimpleBindingRegexp = /'([\s\S]+?)'\s*?\|\s*?translate/i;
 
 /**
  * Loosely parses string (from HTML) to an object.
  *
  * According to Mozilla a bit better than eval().
  *
- * @param {str} obj
+ * @param {str} str
  * @returns {*}
  */
-function looseJsonParse(obj) {
+function looseJsonParse(str) {
   let parsed;
 
   try {
     // eslint-disable-next-line no-new-func
-    parsed = Function(`"use strict";return (${obj})`)();
+    parsed = Function(`"use strict";return (${str})`)();
   } catch (err) {
-    parsed = {};
+    // When JSON string evaluation fails
+    // we try to generate a dictionary with the key/value pairs
+    // in order to obtain the valid parameters and discard the
+    // parameters that are not valid (e.g. ReferenceError)
+    const keyValuePairRegex = /(\w+):\s*(?:"([^"]*)"|(\S+))/g;
+    const paramsDict = {};
+    let match;
+
+    // eslint-disable-next-line no-cond-assign
+    while (match = keyValuePairRegex.exec(str)) {
+      // eslint-disable-next-line prefer-destructuring
+      if (match[1] && match[2]) paramsDict[match[1]] = match[2];
+    }
+    const paramsDictStr = JSON.stringify(paramsDict);
+
+    // eslint-disable-next-line no-new-func
+    parsed = Function(`"use strict";return (${paramsDictStr})`)();
   }
 
   return parsed;
@@ -86,7 +107,11 @@ function parseHTMLTemplateFile(HASHES, filename, relativeFile, options) {
     const textStr = _.trim(String(text));
 
     if (textStr.length) {
-      const result = textStr.match(pipeBindingRegexp);
+      let result = textStr.match(pipeBindingRegexp);
+
+      if (!result) {
+        result = textStr.match(pipeSimpleBindingRegexp);
+      }
 
       if (result) {
         const string = result[1];
@@ -125,7 +150,7 @@ function parseHTMLTemplateFile(HASHES, filename, relativeFile, options) {
   }
 
   const data = fs.readFileSync(filename, 'utf8');
-  const { rootNodes, errors } = ngHtmlParser.parse(data);
+  const { rootNodes, errors } = ngHtmlParser.parse(data, { canSelfClose: true });
   if (errors.length) return;
 
   parseTemplateNode(rootNodes);
