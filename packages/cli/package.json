@@ -31,7 +31,7 @@
     "@transifex/native": "^7.1.5",
     "@vue/compiler-sfc": "^3.4.7",
     "angular-html-parser": "^1.8.0",
-    "axios": "^1.6.5",
+    "axios": "^1.15.0",
     "ejs": "^3.1.9",
     "glob": "^8.1.0",
     "lodash": "^4.17.21",
